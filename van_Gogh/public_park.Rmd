@@ -83,7 +83,7 @@ shapes2<-data.frame(
               a =.44)
             )
 
-ggplot()+ theme(panel.background = element_rect(fill=colors[1], colour=colors[1]),
+g<-ggplot()+ theme(panel.background = element_rect(fill=colors[1], colour=colors[1]),
                    panel.grid.major = element_blank(),
                    panel.grid.minor = element_blank())+
   shapes+
@@ -97,6 +97,10 @@ coord_fixed()+
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
+
+png("public_park1.png", width=4, height=6, res=500, units="in")
+g
+dev.off()
 
 ```
 

@@ -1,0 +1,79 @@
+---
+title: "January_1_10000_things"
+author: "Miles Ott"
+date: "1/1/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(scales)
+
+#------ making one curve
+
+curve<-function(xplus, thecolor){
+  p1<-geom_path(
+              aes(
+                y=c(
+                  sin(seq(-3*pi,-2.3*pi, length=100)),
+                  sin(seq(-2.3*pi, -1.3*pi, length=200)),
+                  sin(seq(-1.3*pi, -.5*pi, length=300)),
+                  sin(seq(-.5*pi, 1, length=400)) 
+                  )*.2+xplus,
+                x=seq(1, -1, length=1000)
+               ),
+              color=thecolor,
+              size=.0001,
+              )
+ 
+  return(list(p1))
+}
+
+#------ making many curves
+shapes<-data.frame(
+  x.seq<-c(seq(-2,5, length=300), 
+           seq(-1,4, length=200), 
+           seq(0,2.3, length=300),
+           seq(1,1.6, length=700),
+           seq(-1.3,-1.6, length=100)),
+  color<-sample(c("gray39","gray50","gray68","gray92","gray78"),1600, replace=T )
+  )%>%
+  purrr::pmap(., 
+            ~curve(xplus = ..1,
+                   thecolor = ..2)
+            )
+
+#----- putting it all together
+
+g<-ggplot()+ 
+  theme(panel.background = element_rect(fill="white",
+                                        colour='white'),
+                   panel.grid.major = element_blank(),
+                   panel.grid.minor = element_blank())
+
+
+g<-g+shapes
+
+#------ finishing out the image 
+g<-g+  coord_fixed()+
+  scale_x_continuous(limits = c(-1,1), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(-4,6), expand = c(0, 0))+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+png("Genuary_2022/Day1.png", width=5, height=10, res=500, units="in")
+g
+dev.off()
+
+#g
+
+```
+
+

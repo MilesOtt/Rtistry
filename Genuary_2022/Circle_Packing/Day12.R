@@ -32,10 +32,10 @@ intersect<-function(c1, c2){
 }
 
 #generate random circles
-n<-20000
-r<-runif(n/8, .5, 1)
-r<-c(r, runif(n/8, .3, .5))
-r<-c(r, runif(n*3/4, .05, .3))
+n<-8000
+r<-runif(n/8, .1, .2)
+r<-c(r, runif(n/8, .1, .3))
+r<-c(r, runif(n*3/4, .005, .1))
 x<-runif(n, 0, 5)
 y<-runif(n, 0, 5)
 color.here<-sample(c("cyan4", 
@@ -60,6 +60,35 @@ for (i in 2:n){
   
 }
 circle.param<-as.data.frame(circle.param[keep==TRUE, ])
+
+
+#trying to maximize size of circles------------------
+
+for (i in 1: dim(circle.param)[1]){
+  
+  indices = (1: dim(circle.param)[1])[-i]
+  sum.intersect =0
+  circle.parami<-circle.param[i,]
+  
+  while (sum.intersect ==0){
+    circle.parami[1]<-as.numeric(circle.parami[1])+.01
+    for(j in indices){
+      if (intersect(circle.parami, circle.param[j,]))
+        sum.intersect= sum.intersect+1
+    }
+  }
+  if (circle.parami[1]!=as.numeric(circle.param[i,1])){
+    circle.parami[1]<-circle.parami[1]-.01
+   circle.param[i,1]<-circle.parami[1]
+  }
+}
+
+
+#----------------------------------------
+
+
+
+
 
 
 #make circle objects to plot
@@ -89,6 +118,6 @@ g
 sum(keep)
 
 
-png(filename="Circle_Packing/packedcircles2.png", width=4, height=6, res=500, units="in")
+png(filename="Genuary_2022/Circle_Packing/packedcircles12.png", width=6, height=6, res=800, units="in")
 g
 dev.off()

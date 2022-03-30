@@ -1,0 +1,270 @@
+---
+title: "Red Movement Bridget Riley"
+author: "Miles Ott"
+date: "03/04/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+original found here: https://artuk.org/discover/artworks/red-movement-18408
+
+```{r}
+library(tidyverse)
+#library(ggtheme)
+
+colors<-c( "#f7f2da", #1 cream
+           "#95a3c8", #2 violet
+           "#7087b9", #3 purple
+           "#51afe2", #4 sky blue
+           "#64b2c6", #5 teal blue
+           "#5b809a", #6 darker teal blue
+           "#57a594", #7 green
+           "#e0ac7c"  #8 orange
+)
+```
+
+sin (theta) = opposite / hypotenuse
+
+cosin (theta) = adjacent /hypotenuse
+
+tan (theta) = opposite / adjacent
+
+tan (theta) = x.top / adjacent
+
+adjacent = xtop / tan (theta)
+
+
+x.top- x.bottom = adj
+
+
+height -tan(theta) * xtop = ( ybottom)
+
+
+```{r}
+
+#function for making guidelines
+
+get_lines<-function(x.top, height, theta, xmax){
+  x.bottom = x.top-height/tan(theta)
+  y.bottom = 0
+  y.top = height
+  if (x.bottom < 0){
+    x.bottom = 0
+    y.bottom = (height- tan(theta)*x.top)
+  }
+  if (x.top > xmax){
+    x.top =  xmax
+    adj = x.top-x.bottom
+    y.top =  tan(pi+theta) * adj
+  }
+
+  xcoords= c(x.top, x.bottom)
+  ycoords= c(y.top, y.bottom)
+    p1<-geom_path( 
+               aes(x=xcoords, y=ycoords)
+               )
+    return(list(p1))
+}
+
+
+
+#------ making guidelines
+
+n<-12
+w<-10
+h<-4
+theta =pi/4
+df<-data.frame(
+  x.top = seq(0, w+3, length.out= n+2)[-1],
+  width =w,
+  height=h,
+  theta= theta
+  )
+
+guidelines<-df%>% #(x.top, height, theta, xmax)
+  purrr::pmap(., 
+            ~get_lines(x.top=..1, 
+                    height =..3, 
+                    theta=..4, 
+                    xmax = ..2)
+            )
+
+```
+
+
+
+
+
+blob 1
+
+```{r}
+leng=100
+x.top.vec<-seq(0, w+3, length.out= n+2)[-1]
+blob_1<-
+  geom_polygon(
+    aes(
+      x= c(sin(seq(3*pi/4, 0, length.out=leng))*.9,0),
+      y = c(seq(h, h- tan(theta)*x.top.vec[2], length.out =leng ), h)
+    ),
+    fill = colors[7]
+  )
+```
+
+
+
+blob 2
+```{r}
+
+    x.top = x.top.vec[1]
+    x.bottom = 0
+    y.top = h
+    y.bottom = (h- tan(theta)*x.top)
+
+    blob_2<-
+  geom_polygon(
+    aes(
+      x= c(1, x.bottom, x.bottom),
+      y = c(h, y.bottom, h)
+    ),
+    fill = colors[4]
+  )    
+    
+```
+
+blob 3
+
+```{r}
+blob_3<-
+  geom_polygon(
+    aes(
+      x= c(sin(seq(0, pi, length.out=leng)))*.3,
+      y = c(seq(h, h- tan(theta)*x.top.vec[2], length.out =leng ))
+    ),
+    fill = colors[5]
+  )
+```
+
+
+blob 4
+
+```{r}
+blob_4<-
+ geom_polygon(
+    aes(
+      x= c(sin(seq(-1.5, 2*pi, length.out=leng))*1.1 +5.5,0,0)*.2,
+      y = c(seq(h, 0, length.out =leng ), 0, h)
+    ),
+    fill = colors[4]
+  )
+```
+
+
+blob 5
+```{r}
+x.top<-x.top.vec[2]
+    x.1 = 0
+    y.1 = (h- tan(theta)*x.top)
+x.top<-x.top.vec[3]   
+    x.2 = 0
+    y.2 = (h- tan(theta)*x.top)
+x.3<- .6
+y.3<- y.2+.6
+x.4<- .6
+y.4<-y.1+.6
+    
+    
+blob_5<-
+ geom_polygon(
+    aes(
+      x= c(x.1, x.2, x.3, x.4),
+      y = c(y.1, y.2, y.3, y.4)
+    ),
+    fill = colors[1]
+  )
+```
+
+
+blob 6 blue foot ball
+
+```{r}
+
+xcoords= c(
+        c(sin(seq(0, pi, length.out=leng))*1.1 +3.5)*.25,
+        c(sin(seq(0, pi, length.out=leng))*-1.1 +3.5)*.25
+      )
+
+ycoords = c(
+        seq(y.3-.25, y.4+.25, length.out =leng ),
+        seq(y.4+.25, y.3-.25, length.out =leng )
+      )
+angle=0.3
+ R<-matrix(c(cos(angle), sin(angle), -sin(angle), cos(angle) ), nrow=2)
+  coords_xy<-rbind(xcoords,ycoords)
+  coords_xy<-t(coords_xy)%*%R
+
+blob_6<-
+ geom_polygon(
+    aes(x=coords_xy[,1]-.9,
+        y=coords_xy[,2]+.29
+    ),
+    fill = colors[6]
+  )
+
+
+###
+
+
+```
+
+blob 7
+
+```{r}
+blob_7<-
+  geom_polygon(
+    aes(
+      x= c(sin(seq(2.9*pi/4, 0, length.out=leng))*.9,0)+.8,
+      y = c(seq(h-.05, h-.05- 1.6, length.out =leng ), h-.74)-.48
+    ),
+    fill = colors[3]
+  )
+```
+
+putting it all together 
+```{r}
+
+g<-  ggplot() +
+  scale_x_continuous(limits = c(0,10), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0,4), expand = c(0, 0))+
+  coord_fixed() +
+  theme(axis.title.x=element_blank(),
+        
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.background = 
+          element_rect(fill="#f7f2da", colour="#f7f2da"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  blob_7+  
+  blob_4+
+  blob_1+
+
+  blob_2+
+ 
+  blob_3+
+  blob_5+
+  blob_6+
+
+  guidelines
+  
+g
+
+png("Red_Movement_Bridget_riley/Red_Movement_second_try.png", width=8, height=4, res=500, units="in")
+g
+dev.off()
+
+```
+

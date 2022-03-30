@@ -1,0 +1,143 @@
+---
+title: "Red Movement Bridget Riley"
+author: "Miles Ott"
+date: "03/04/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+original found here: https://artuk.org/discover/artworks/red-movement-18408
+
+```{r}
+library(tidyverse)
+library(ggtheme)
+
+colors<-c( "#f7f2da", #cream
+           "#95a3c8", #violet
+           "#7087b9", #purple
+           "#51afe2", #sky blue
+           "#64b2c6", #teal blue
+           "#5b809a", #darker teal blue
+           "#57a594", #green
+           "#e0ac7c"  #orange
+)
+```
+
+
+
+function for making a stripe
+```{r}
+stripe<-function(stripeindex, n, width, height, theta, col.here){
+  
+  stripe.width= width/n
+  starting.x.top = stripe.width *(stripeindex-1)
+  ending.x.top = starting.x.top + stripe.width
+   starting.x.bottom = starting.x.top-tan(theta)*height
+  ending.x.bottom = starting.x.bottom +stripe.width
+
+  xcoords= c(starting.x.top, ending.x.top, ending.x.bottom, starting.x.bottom)
+  ycoords= c(height, height, 0, 0)
+    p1<-geom_polygon( 
+               aes(x=xcoords, y=ycoords), 
+               color=col.here,
+               fill = col.here)
+    return(list(p1))
+}
+
+sine.wave<-function(index, n, width, height){
+  y = seq(0, height,  by=.1)
+  x = sin(pi/3+y*1.9 +runif(1, .1, 1.4))*runif(1, .4, .6)+ (index-1)*width*runif(1, .9, 1.1)/n
+  p<-as.data.frame(cbind(x, y))
+  return(p)
+}
+
+
+#------ making many stripes
+
+n<-13
+df<-data.frame(
+  stripe.index = 1:n,
+  width =9,
+  height=3,
+  theta= pi/6,
+  color.here=sample(colors, size =n, replace=T)
+  )
+
+many_stripes<-df%>%
+  purrr::pmap(., 
+            ~stripe(stripeindex=..1, 
+                    n=n, 
+                    width=..2, 
+                    height=..3, 
+                    theta=..4, 
+                    col.here=..5)
+            )
+
+many_waves<-df%>%
+  purrr::pmap(.,
+            ~sine.wave(
+              index=..1, 
+              n=n, 
+              width=..2, 
+              height=..3)
+  )
+
+many_more_waves<-df%>%
+  purrr::pmap(.,
+            ~sine.wave(
+              index=..1, 
+              n=n, 
+              width=..2, 
+              height=..3)
+  )
+
+
+waves1<-geom_polygon(
+  aes(
+    x=c(many_waves[[1]]$x, rev(many_more_waves[[2]]$x)),
+    y=c(many_waves[[1]]$y, rev(many_more_waves[[2]]$y))),
+  fill=sample(colors, 1))
+
+waves2<-geom_polygon(
+  aes(
+    x=c(many_waves[[1]]$x,df$width[1]/n*(0), df$width[1]/n*(0)-tan(df$theta[1])*df$height[1]),
+    y=c(many_waves[[1]]$y, df$height[1], 0)
+  ),
+  fill = sample(colors, 1)
+)
+
+```
+
+
+
+
+```{r}
+
+g<-  ggplot() +
+  scale_x_continuous(limits = c(-2,9), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0,3), expand = c(0, 0))+
+  coord_fixed() +
+  theme(axis.title.x=element_blank(),
+        
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.background = 
+          element_rect(fill="#f6eceb", colour='#f6eceb'),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())+
+  many_stripes+
+  waves1+
+  waves2
+
+g
+
+png("Red_Movement_Bridget_riley/Red_Movement.png", width=9, height=4, res=500, units="in")
+g
+dev.off()
+
+```
+
